@@ -646,7 +646,25 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
     }
   }
 
-  /** annotate the CoreDocument wrapper **/
+  /**
+   * Annotates a modern {@link CoreDocument} object, running the entire pipeline
+   * over the underlying document and wrapping resulting sentence and entity mention structures.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Properties props = new Properties();
+   * props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner");
+   * StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+   * CoreDocument doc = new CoreDocument("Barack Obama was born in Hawaii.");
+   * pipeline.annotate(doc);
+   * for (CoreSentence sent : doc.sentences()) {
+   *   System.out.println(sent.text() + " -> " + sent.entityMentionNames());
+   * }
+   * }</pre>
+   *
+   * @param document The {@link CoreDocument} wrapper to annotate in-place. Must not be null.
+   * @throws NullPointerException If document is null.
+   */
   public void annotate(CoreDocument document) {
     // annotate the underlying Annotation
     this.annotate(document.annotationDocument);
@@ -654,7 +672,22 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
     document.wrapAnnotations();
   }
 
-  /** {@inheritDoc} */
+  /**
+   * Annotates a legacy {@link Annotation} object sequentially through all configured annotators.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Properties props = new Properties();
+   * props.setProperty("annotators", "tokenize,ssplit,pos");
+   * StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+   * Annotation document = new Annotation("Stanford NLP is powerful.");
+   * pipeline.annotate(document);
+   * List<CoreLabel> tokens = document.get(CoreAnnotations.TokensAnnotation.class);
+   * }</pre>
+   *
+   * @param annotation The {@link Annotation} container to process in-place. Must not be null.
+   * @throws IllegalArgumentException If required predecessor annotations are missing.
+   */
   @Override
   public void annotate(Annotation annotation) {
     super.annotate(annotation);
@@ -664,7 +697,26 @@ public class StanfordCoreNLP extends AnnotationPipeline  {
     }
   }
 
-
+  /**
+   * Asynchronously annotates an {@link Annotation} using the pipeline's thread pool,
+   * triggering the given callback consumer upon completion.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Properties props = new Properties();
+   * props.setProperty("annotators", "tokenize,ssplit,pos");
+   * props.setProperty("threads", "4");
+   * StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+   * Annotation doc = new Annotation("Concurrent analysis example.");
+   * pipeline.annotate(doc, finishedDoc -> {
+   *   System.out.println("Processing completed: " + finishedDoc);
+   * });
+   * }</pre>
+   *
+   * @param annotation The {@link Annotation} to process. Must not be null.
+   * @param callback The {@link Consumer} receiving the completed annotation.
+   * @throws RuntimeInterruptedException If thread acquisition is interrupted.
+   */
   public void annotate(final Annotation annotation, final Consumer<Annotation> callback){
     if (PropertiesUtils.getInt(properties, "threads", 1) == 1) {
       annotate(annotation);
