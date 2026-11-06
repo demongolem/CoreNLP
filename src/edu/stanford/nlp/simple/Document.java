@@ -391,8 +391,19 @@ public class Document {
 
 
   /**
-   * Create a new document from the passed in text and the given properties.
-   * @param text The text of the document.
+   * Creates a new Document from the passed in text using custom configuration properties.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Properties props = new Properties();
+   * props.setProperty("tokenize.whitespace", "true");
+   * Document doc = new Document(props, "Hello world! This is Stanford CoreNLP.");
+   * List<Sentence> sentences = doc.sentences();
+   * }</pre>
+   *
+   * @param props The {@link Properties} specifying CoreNLP configuration options for this document. Must not be null.
+   * @param text The raw string content of the document. Must not be null.
+   * @throws NullPointerException If text or props is null.
    */
   public Document(Properties props, String text) {
     this.defaultProps = props;
@@ -401,16 +412,35 @@ public class Document {
 
 
   /**
-   * Create a new document from the passed in text.
-   * @param text The text of the document.
+   * Creates a new Document from the passed in text using default properties.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Document doc = new Document("Joe Smith was born in California. He works at Stanford.");
+   * for (Sentence sent : doc.sentences()) {
+   *   System.out.println(sent.nerTags());
+   * }
+   * }</pre>
+   *
+   * @param text The raw string content of the document. Must not be null.
+   * @throws NullPointerException If text is null.
    */
   public Document(String text) {
     this(EMPTY_PROPS, text);
   }
 
   /**
-   * Convert a CoreNLP Annotation object to a Document.
-   * @param ann The CoreNLP Annotation object.
+   * Converts a CoreNLP {@link Annotation} object to a {@link Document} representation.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Annotation ann = new Annotation("Some annotated text");
+   * Document doc = new Document(new Properties(), ann);
+   * }</pre>
+   *
+   * @param props Custom properties configuring the document pipeline.
+   * @param ann The CoreNLP {@link Annotation} object to convert. Must not be null.
+   * @throws NullPointerException If ann is null.
    */
   @SuppressWarnings("Convert2streamapi")
   public Document(Properties props, Annotation ann) {
@@ -425,7 +455,11 @@ public class Document {
   }
 
 
-  /** @see Document#Document(Properties, Annotation) */
+  /**
+   * Converts a CoreNLP {@link Annotation} object to a {@link Document} using default properties.
+   *
+   * @param ann The CoreNLP {@link Annotation} object. Must not be null.
+   */
   public Document(Annotation ann) {
     this(Document.EMPTY_PROPS, ann);
   }

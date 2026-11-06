@@ -54,60 +54,200 @@ import java.util.*;
 public interface Annotator {
 
   /**
-   * Given an Annotation, perform a task on this Annotation.
+   * Given an {@link Annotation}, performs this annotator's task in-place.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Annotator annotator = new POSTaggerAnnotator("pos", new Properties());
+   * Annotation document = new Annotation("Stanford University is located in California.");
+   * // First tokenize and sentence split
+   * new TokenizerAnnotator().annotate(document);
+   * new WordsToSentencesAnnotator().annotate(document);
+   * // Annotate with part-of-speech tags
+   * annotator.annotate(document);
+   * }</pre>
+   *
+   * @param annotation The {@link Annotation} object representing the document to be processed and modified in-place. Must not be null.
+   * @throws IllegalArgumentException If the provided annotation is null or missing prerequisite annotations.
+   * @throws RuntimeException If an unrecoverable error occurs during processing.
    */
   void annotate(Annotation annotation);
 
   /**
-   * A block of code called when this annotator unmounts from the
+   * Hook called when this annotator unmounts or is removed from the
    * {@link AnnotatorPool}.
-   * By default, nothing is done.
+   * By default, nothing is done. Implementations should override this to release
+   * allocated resources, model handles, or background thread pools.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * annotator.unmount();
+   * }</pre>
    */
   default void unmount() { }
 
 
   /**
-   * Returns a set of requirements for which tasks this annotator can
-   * provide.  For example, the POS annotator will return "pos".
+   * Returns a set of requirement keys for annotations that this annotator provides or satisfies.
+   * For example, the POS annotator returns {@code Collections.singleton(CoreAnnotations.PartOfSpeechAnnotation.class)}.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Set<Class<? extends CoreAnnotation>> satisfied = annotator.requirementsSatisfied();
+   * if (satisfied.contains(CoreAnnotations.NamedEntityTagAnnotation.class)) {
+   *   System.out.println("Produces NER tags");
+   * }
+   * }</pre>
+   *
+   * @return A {@link Set} of {@link CoreAnnotation} class types satisfied by this annotator; never null (may be empty).
    */
   Set<Class<? extends CoreAnnotation>> requirementsSatisfied();
 
   /**
-   * Returns the set of tasks which this annotator requires in order
-   * to perform.  For example, the POS annotator will return
-   * "tokenize", "ssplit".
+   * Returns the set of requirement keys which this annotator requires to be present
+   * in the {@link Annotation} prior to {@link #annotate(Annotation)} execution.
+   * For example, the POS annotator requires tokenization and sentence splitting.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Set<Class<? extends CoreAnnotation>> reqs = annotator.requires();
+   * if (reqs.contains(CoreAnnotations.TokensAnnotation.class)) {
+   *   System.out.println("Requires tokenized input");
+   * }
+   * }</pre>
+   *
+   * @return A {@link Set} of {@link CoreAnnotation} class types required by this annotator; never null (may be empty).
    */
   Set<Class<? extends CoreAnnotation>> requires();
 
   /**
-   * These are annotators which StanfordCoreNLP knows how to create.
-   * Add new annotators and/or annotators from other groups here!
+   * Tokenizer annotator key ("tokenize"). Splits raw text into tokens.
    */
   String STANFORD_TOKENIZE = "tokenize";
+
+  /**
+   * Clean XML annotator key ("cleanxml"). Removes or escapes XML/HTML tags.
+   */
   String STANFORD_CLEAN_XML = "cleanxml";
+
+  /**
+   * Sentence splitter annotator key ("ssplit"). Splits token sequences into sentences.
+   */
   String STANFORD_SSPLIT = "ssplit";
+
+  /**
+   * Part-of-speech tagger annotator key ("pos"). Assigns Penn Treebank POS tags to tokens.
+   */
   String STANFORD_POS = "pos";
+
+  /**
+   * Lemmatizer annotator key ("lemma"). Generates base morphological lemma forms for tokens.
+   */
   String STANFORD_LEMMA = "lemma";
+
+  /**
+   * Named entity recognizer annotator key ("ner"). Identifies entities such as PERSON, LOCATION, ORGANIZATION.
+   */
   String STANFORD_NER = "ner";
+
+  /**
+   * Regular expression NER annotator key ("regexner"). Matches rule-based regex patterns to named entity tags.
+   */
   String STANFORD_REGEXNER = "regexner";
+
+  /**
+   * TokensRegex annotator key ("tokensregex"). Executes pattern expressions over token sequences.
+   */
   String STANFORD_TOKENSREGEX = "tokensregex";
+
+  /**
+   * Entity mentions annotator key ("entitymentions"). Extracts multi-word entity mentions.
+   */
   String STANFORD_ENTITY_MENTIONS = "entitymentions";
+
+  /**
+   * Gender annotator key ("gender"). Assigns gender labels to person names.
+   */
   String STANFORD_GENDER = "gender";
+
+  /**
+   * Truecase annotator key ("truecase"). Determines the canonical casing of words in text.
+   */
   String STANFORD_TRUECASE = "truecase";
+
+  /**
+   * Constituent parse annotator key ("parse"). Generates full syntactic phrase structure trees.
+   */
   String STANFORD_PARSE = "parse";
+
+  /**
+   * Deterministic coreference annotator key ("dcoref"). Rule-based coreference resolution system.
+   */
   String STANFORD_DETERMINISTIC_COREF = "dcoref";
+
+  /**
+   * Statistical/neural coreference annotator key ("coref"). Resolves coreference mentions across documents.
+   */
   String STANFORD_COREF = "coref";
-  String STANFORD_COREF_MENTION = "coref.mention";  // TODO(jebolton) Merge with entitymention
+
+  /**
+   * Coreference mention detector key ("coref.mention"). Identifies mentions to link in coreference chains.
+   */
+  String STANFORD_COREF_MENTION = "coref.mention";
+
+  /**
+   * Relation extraction annotator key ("relation"). Identifies semantic relations between entity pairs.
+   */
   String STANFORD_RELATION = "relation";
+
+  /**
+   * Sentiment analysis annotator key ("sentiment"). Predicts 5-class sentiment on sentence parse trees.
+   */
   String STANFORD_SENTIMENT = "sentiment";
+
+  /**
+   * Column data classifier annotator key ("cdc"). Classifies tabular column-formatted data.
+   */
   String STANFORD_COLUMN_DATA_CLASSIFIER = "cdc";
+
+  /**
+   * Neural dependency parser annotator key ("depparse"). Builds Universal Dependencies graphs.
+   */
   String STANFORD_DEPENDENCIES = "depparse";
+
+  /**
+   * Natural logic annotator key ("natlog"). Annotates sentence tokens with natural logic operator scopes.
+   */
   String STANFORD_NATLOG = "natlog";
+
+  /**
+   * Open Information Extraction annotator key ("openie"). Extracts open-domain relational triples (subject, relation, object).
+   */
   String STANFORD_OPENIE = "openie";
+
+  /**
+   * Quotation annotator key ("quote"). Detects direct speech and quotes in prose.
+   */
   String STANFORD_QUOTE = "quote";
+
+  /**
+   * Quotation attribution annotator key ("quote.attribution"). Links quotes to speaker entities.
+   */
   String STANFORD_QUOTE_ATTRIBUTION = "quote.attribution";
+
+  /**
+   * Universal Dependencies morphological features annotator key ("udfeats"). Assigns morphological feature maps.
+   */
   String STANFORD_UD_FEATURES = "udfeats";
+
+  /**
+   * Entity linker annotator key ("entitylink"). Links entity mentions to external knowledge bases like Wikipedia/Wikidata.
+   */
   String STANFORD_LINK = "entitylink";
+
+  /**
+   * Knowledge Base Population annotator key ("kbp"). Extracts slot-filling knowledge base facts.
+   */
   String STANFORD_KBP = "kbp";
 
 

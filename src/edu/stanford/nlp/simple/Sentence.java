@@ -119,8 +119,17 @@ public class Sentence {
   }
 
   /**
-   * Create a new sentence from the given text, assuming the entire text is just one sentence.
-   * @param text The text of the sentence.
+   * Creates a new sentence from the given text, assuming the entire text is a single sentence.
+   *
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * Sentence sent = new Sentence("The quick brown fox jumps over the lazy dog.");
+   * List<String> posTags = sent.posTags();
+   * List<String> lemmas = sent.lemmas();
+   * }</pre>
+   *
+   * @param text The raw string representing the sentence. Must not be null.
+   * @throws NullPointerException If text is null.
    */
   public Sentence(String text) {
     this(text, SINGLE_SENTENCE_DOCUMENT);
@@ -141,11 +150,17 @@ public class Sentence {
 
 
   /**
-   * Create a new sentence from the given tokenized text, assuming the entire text is just one sentence.
-   * WARNING: This method may in rare cases (mostly when tokens themselves have whitespace in them)
-   *          produce strange results; it's a bit of a hack around the default tokenizer.
+   * Creates a new sentence from a pre-tokenized list of word strings.
    *
-   * @param tokens The text of the sentence.
+   * <p><b>Example usage:</b></p>
+   * <pre>{@code
+   * List<String> words = Arrays.asList("Barack", "Obama", "was", "born", "in", "Hawaii", ".");
+   * Sentence sent = new Sentence(words);
+   * System.out.println(sent.nerTags());
+   * }</pre>
+   *
+   * @param tokens The list of pre-split word tokens making up the sentence. Must not be null.
+   * @throws NullPointerException If tokens is null.
    */
   public Sentence(List<String> tokens) {
     this(Document::new, tokens, SINGLE_SENTENCE_TOKENIZED_DOCUMENT);
